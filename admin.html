@@ -4,14 +4,63 @@
     <meta charset="UTF-8">
     <title>CAT-MANGA | لوحة التحكم</title>
     <style>
-        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
-        input[type="text"], button, textarea, select, input[type="file"], input[type="number"] { /* أضفت أنواع الإدخال هنا */
-            padding: 10px; margin-top: 10px; display: block; width: 100%; box-sizing: border-box; 
-            border: 1px solid #30363d; background-color: #0d1117; color: #c9d1d9; border-radius: 6px;
+        body { 
+            font-family: Tahoma, sans-serif; 
+            text-align: right; 
+            margin: 50px; 
+            background-color: #161b22; 
+            color: #c9d1d9; 
+        }
+
+        /* تحديث شامل لتنسيق الحقول */
+        input[type="text"], input[type="number"], input[type="file"], textarea, select {
+            padding: 12px; 
+            margin-top: 8px; 
+            margin-bottom: 15px; 
+            display: block; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border: 1px solid #30363d; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            border-radius: 6px;
+            transition: border-color 0.3s;
         }
-        button { background-color: #238636; border: none; cursor: pointer; margin-top: 20px; }
+        /* تأثير التركيز (Focus) */
+        input:focus, textarea:focus {
+            border-color: #58a6ff;
+            outline: none;
+        }
+
+        button { 
+            background-color: #238636; 
+            color: white;
+            border: none; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            padding: 15px;
+            font-size: 1.1em;
+            width: 100%;
+            border-radius: 6px;
+        }
         button:hover { background-color: #2ea043; }
-        .warning { color: yellow; border: 1px dashed yellow; padding: 10px; margin-bottom: 20px; }
+        
+        .warning { 
+            color: yellow; 
+            border: 1px dashed yellow; 
+            padding: 15px; 
+            margin-bottom: 30px; 
+            border-radius: 6px; 
+        }
+        
+        /* تنسيق لرسالة الحالة */
+        #status_message {
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -21,7 +70,7 @@
         تحذير: هذه الصفحة خاصة بك فقط! لا تشارك رابطها.
     </div>
 
-        <label for="manga_id">اسم المانهوا (بالانجليزي، لا يوجد مسافات):</label>
+    <label for="manga_id">اسم المانهوا (بالانجليزي، لا يوجد مسافات):</label>
     <input type="text" id="manga_id" value="demo-manga">
 
     <label for="chapter_number">رقم الفصل:</label>
@@ -35,7 +84,7 @@
 
     <button onclick="startUpload()">بدء الرفع</button>
     <p id="status_message" style="margin-top: 15px; color: #58a6ff;">حالة الرفع: في الانتظار...</p>
-        <script>
+    <script>
         const GITHUB_USERNAME = "ZAD-ctrl"; // اسم المستخدم الخاص بك
         const GITHUB_REPO = "CAT-MANGA";   // اسم المستودع
         const DATA_FILE_PATH = "data/manga_list.json"; 
@@ -103,138 +152,3 @@
                         },
                         body: JSON.stringify({
                             message: `[MANGA UPLOAD] Adding page ${i + 1} to chapter ${chapterNum} of ${mangaId}`,
-                            content: contentBase64
-                        })
-                    });
-
-                    if (!response.ok) throw new Error(`فشل رفع الصفحة ${i + 1}.`);
-                    
-                    pagesPaths.push(filePath);
-
-                } catch (error) {
-                    status.style.color = 'red';
-                    status.innerText = `فشل رفع الصفحة ${i + 1}. توقف الرفع.`;
-                    console.error(error);
-                    return;
-                }
-            }
-
-            // تحديث ملف JSON بعد نجاح رفع الصور
-            status.style.color = 'yellow';
-            status.innerText = 'تم رفع جميع الصور بنجاح. جاري تحديث قاعدة البيانات (JSON)...';
-
-            await updateJsonFile(mangaId, chapterNum, chapterTitle, pagesPaths, status);
-        }
-
-        // ----------------------------------------------------------------------
-        // 4. وظيفة تحديث ملف الـ JSON
-        async function updateJsonFile(mangaId, chapterNum, chapterTitle, pagesPaths, statusElement) {
-            try {
-                // جلب المحتوى الحالي للملف
-                const fetchResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!fetchResponse.ok) throw new Error("فشل جلب ملف JSON الحالي.");
-
-                const data = await fetchResponse.json();
-                const sha = data.sha; 
-                const jsonContentBase64 = data.content;
-                const currentJsonContent = JSON.parse(atob(jsonContentBase64));
-
-                // إضافة الفصل الجديد للبيانات
-                let mangaEntry = currentJsonContent.manga.find(m => m.id === mangaId);
-                if (!mangaEntry) {
-                     mangaEntry = {
-                        "id": mangaId,
-                        "title": chapterTitle.split(' - ')[0], 
-                        "cover_image": "uploads/default-cover.jpg", 
-                        "description": "وصف مبدئي...",
-                        "chapters": []
-                     };
-                     currentJsonContent.manga.push(mangaEntry);
-                }
-
-                mangaEntry.chapters.push({
-                    "chapter_number": chapterNum,
-                    "title": chapterTitle,
-                    "pages": pagesPaths
-                });
-
-                // تشفير البيانات الجديدة وإرسالها
-                const newJsonContent = JSON.stringify(currentJsonContent, null, 2);
-                const newContentBase64 = btoa(unescape(encodeURIComponent(newJsonContent)));
-
-                const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `[MANGA UPLOAD] Update JSON: Added Chapter ${chapterNum} for ${mangaId}`,
-                        content: newContentBase64,
-                        sha: sha 
-                    })
-                });
-
-                if (!updateResponse.ok) throw new Error("فشل تحديث ملف JSON.");
-
-                statusElement.style.color = 'lightgreen';
-                statusElement.innerText = '✅ تم الرفع والتحديث بنجاح!';
-
-            } catch (error) {
-                statusElement.style.color = 'red';
-                statusElement.innerText = `فشل في تحديث قاعدة البيانات: ${error.message}`;
-                console.error(error);
-            }
-        }
-    </script>
-</body>
-</html>
-<style>
-        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
-        /* تحديث شامل لتنسيق الحقول */
-        input[type="text"], input[type="number"], input[type="file"], textarea, select {
-            padding: 12px; 
-            margin-top: 8px; 
-            margin-bottom: 15px; 
-            display: block; 
-            width: 100%; 
-            box-sizing: border-box; 
-            border: 1px solid #30363d; 
-            background-color: #0d1117; 
-            color: #c9d1d9; 
-            border-radius: 6px;
-            transition: border-color 0.3s; /* تأثير عند التركيز */
-        }
-        /* تأثير التركيز (Focus) */
-        input:focus, textarea:focus {
-            border-color: #58a6ff;
-            outline: none;
-        }
-
-        button { 
-            background-color: #238636; 
-            color: white;
-            border: none; 
-            cursor: pointer; 
-            margin-top: 20px; 
-            padding: 15px; /* زيادة حجم الزر */
-            font-size: 1.1em;
-            width: 100%;
-            border-radius: 6px;
-        }
-        button:hover { background-color: #2ea043; }
-        
-        .warning { color: yellow; border: 1px dashed yellow; padding: 15px; margin-bottom: 30px; border-radius: 6px; }
-        
-        /* تنسيق لرسالة الحالة */
-        #status_message {
-            padding: 10px;
-            text-align: center;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-    </style>
