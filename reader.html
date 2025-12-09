@@ -3,42 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <title>CAT-MANGA | قراءة الفصل</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* ------------------ الوضع الداكن والفاااتح -------------------- */
+        /* الألوان الافتراضية (الوضع الداكن - Dark Mode) */
+        :root {
+            --bg-color: #0d1117;
+            --main-text-color: #c9d1d9;
+            --header-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --card-bg: #161b22;
+        }
+
+        /* الألوان للوضع الفاتح (Light Mode) */
+        body.light-mode {
+            --bg-color: #f6f8fa;
+            --main-text-color: #24292f;
+            --header-bg: #ffffff;
+            --border-color: #e1e4e8;
+            --accent-color: #0366d6;
+            --card-bg: #ffffff;
+        }
+        /* ----------------------------------------------------------------- */
+
         body {
             font-family: Tahoma, sans-serif;
             text-align: center;
             margin: 0;
-            background-color: #0d1117; 
-            color: #c9d1d9; 
+            background-color: var(--bg-color); 
+            color: var(--main-text-color); 
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* تنسيق الشريط العلوي */
-        .header {
-            background-color: #161b22;
+        /* تنسيق شريط الترويسة الجديد */
+        .header-bar {
+            background-color: var(--header-bg);
             padding: 15px 20px;
-            border-bottom: 1px solid #30363d;
-            text-align: right;
-            position: sticky; /* يثبت الشريط العلوي عند التمرير */
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky; 
             top: 0;
             z-index: 100;
         }
 
-        .header a {
-            color: #58a6ff;
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .nav-icons button {
+            background: none;
+            border: none;
+            color: var(--main-text-color);
+            font-size: 1.2em;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .nav-icons button:hover {
+            color: var(--accent-color);
+        }
+
+        .chapter-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .chapter-info a {
+            color: var(--accent-color);
             text-decoration: none;
-            margin-left: 20px;
+            margin-right: 20px;
+            font-size: 1em;
         }
 
         .chapter-title {
-            color: #c9d1d9;
+            color: var(--main-text-color);
             font-size: 1.5em;
             margin: 0;
         }
 
         /* تنسيق الصور */
         #manga-viewer {
-            max-width: 900px; /* عرض أقصى لمحتوى الفصل */
+            max-width: 900px; 
             margin: 20px auto;
             padding: 0 10px;
         }
@@ -46,8 +97,9 @@
             max-width: 100%;
             height: auto;
             display: block;
-            margin: 0 auto 5px; /* مسافة بين الصفحات */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin: 0 auto 5px; 
+            /* إضافة ظل خفيف للصور في الوضع الفاتح */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
         }
         
         /* رسائل الحالة والأخطاء */
@@ -60,8 +112,8 @@
         /* أزرار التنقل */
         .navigation-buttons {
             padding: 20px;
-            background-color: #161b22;
-            border-top: 1px solid #30363d;
+            background-color: var(--header-bg); /* استخدام نفس لون شريط الترويسة */
+            border-top: 1px solid var(--border-color);
         }
         .navigation-buttons button {
             background-color: #238636;
@@ -72,6 +124,7 @@
             cursor: pointer;
             border-radius: 4px;
             font-weight: bold;
+            transition: background-color 0.2s;
         }
         .navigation-buttons button:disabled {
             background-color: #30363d;
@@ -83,9 +136,19 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="index.html">الصفحة الرئيسية</a>
-        <h2 class="chapter-title" id="chapter-title">جاري تحميل الفصل...</h2>
+    
+    <div class="header-bar">
+        <div class="logo-text">CAT-MANGA</div>
+        
+        <div class="chapter-info">
+            <a href="index.html">الصفحة الرئيسية</a> 
+            <h2 class="chapter-title" id="chapter-title">جاري تحميل الفصل...</h2>
+        </div>
+        
+        <div class="nav-icons">
+            <button id="search-btn"><i class="fas fa-search"></i></button>
+            <button id="theme-toggle"><i class="fas fa-sun"></i></button>
+        </div>
     </div>
 
     <div id="manga-viewer">
@@ -98,8 +161,50 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', loadChapter);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChapter();
+            setupThemeToggle();
+            setupSearchButton();
+        });
 
+        // ----------------------------------------------------------------
+        // وظيفة تبديل الإضاءة (الوضع الداكن/الفاتح) - نفس كود index.html
+        function setupThemeToggle() {
+            const toggleButton = document.getElementById('theme-toggle');
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const icon = toggleButton.querySelector('i');
+            
+            // تهيئة الثيم عند تحميل الصفحة
+            if (currentTheme === 'light') {
+                document.body.classList.add('light-mode');
+                icon.classList.replace('fa-sun', 'fa-moon'); 
+            }
+
+            toggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                
+                let theme;
+                if (document.body.classList.contains('light-mode')) {
+                    theme = 'light';
+                    icon.classList.replace('fa-sun', 'fa-moon');
+                } else {
+                    theme = 'dark';
+                    icon.classList.replace('fa-moon', 'fa-sun');
+                }
+                localStorage.setItem('theme', theme);
+            });
+        }
+        
+        // ----------------------------------------------------------------
+        // وظيفة زر البحث (بسيطة حاليًا) - نفس كود index.html
+        function setupSearchButton() {
+            document.getElementById('search-btn').addEventListener('click', () => {
+                alert('وظيفة البحث قيد التنفيذ! (صفحة القراءة)');
+            });
+        }
+        
+        // ----------------------------------------------------------------
+        // وظيفة تحميل الفصل (loadChapter) - الكود الأصلي
         async function loadChapter() {
             const params = new URLSearchParams(window.location.search);
             const mangaId = params.get('id');
@@ -113,11 +218,12 @@
 
             if (!mangaId || isNaN(chapterNum)) {
                 titleElement.innerText = "خطأ في الرابط";
-                statusMessage.innerText = "الرجاء التأكد من رابط المانهوا والفصل. (مثل: ?id=demo-manga&chapter=2)";
+                statusMessage.innerText = "الرجاء التأكد من رابط المانهوا والفصل.";
+                prevButton.disabled = true;
+                nextButton.disabled = true;
                 return;
             }
             
-            // تعطيل الأزرار مؤقتاً
             prevButton.disabled = true;
             nextButton.disabled = true;
 
@@ -131,7 +237,6 @@
                 const manga = data.manga.find(m => m.id === mangaId);
                 if (!manga) throw new Error('المانهوا غير موجودة في قاعدة البيانات.');
 
-                // فرز الفصول لضمان الترتيب الصحيح والتنقل
                 manga.chapters.sort((a, b) => a.chapter_number - b.chapter_number);
                 
                 const chapter = manga.chapters.find(c => c.chapter_number === chapterNum);
@@ -141,18 +246,15 @@
                 titleElement.innerText = `${manga.title} - ${chapter.title}`;
                 
                 // 4. عرض الصور
-                viewer.innerHTML = ''; // مسح رسالة التحميل
+                viewer.innerHTML = ''; 
                 chapter.pages.forEach(path => {
                     const img = document.createElement('img');
-                    // المسار هنا هو المسار الكامل الذي رفعته
                     img.src = path; 
                     img.alt = `صفحة الفصل ${chapterNum}`;
                     viewer.appendChild(img);
                 });
                 
                 // 5. إعداد وتنفيذ أزرار التنقل
-                
-                // التحقق من وجود الفصل السابق
                 const prevChapterNum = chapterNum - 1;
                 const nextChapterNum = chapterNum + 1;
                 
