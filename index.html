@@ -2,61 +2,172 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CAT-MANGA | الرئيسية</title>
+    <title>CAT-MANGA | أحدث المانهوا</title>
     <style>
-        /* تنسيق بسيط للعرض */
-        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
-        h1 { color: #58a6ff; }
-        a { color: #4384e5; text-decoration: none; }
-        .manga-card { border: 1px solid #30363d; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
+        body {
+            font-family: Tahoma, sans-serif;
+            text-align: right;
+            margin: 0;
+            padding: 20px;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        h1 {
+            color: #58a6ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .manga-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* تنسيق بطاقة المانهوا */
+        .manga-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none; /* لإزالة التسطير من الرابط */
+            color: inherit;
+            display: block;
+        }
+
+        .manga-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .manga-cover {
+            width: 100%;
+            height: 350px; /* ارتفاع ثابت للغلاف */
+            object-fit: cover; /* لضمان ملء الصورة دون تشوه */
+        }
+
+        .manga-info {
+            padding: 15px;
+        }
+
+        .manga-title {
+            font-size: 1.2em;
+            margin: 0 0 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* لإظهار النقاط إذا كان العنوان طويلاً */
+        }
+
+        .latest-chapter {
+            font-size: 0.9em;
+            color: #8b949e;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.1em;
+            color: yellow;
+        }
+
+        /* رابط لوحة التحكم في الأسفل */
+        .admin-link {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .admin-link a {
+            color: #58a6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>أحدث المانهوا المترجمة</h1>
-    <div id="manga-list">
-        <p>جاري تحميل قائمة المانهوا...</p>
+
+    <div class="manga-grid" id="manga-container">
+        </div>
+    
+    <p id="status">جاري تحميل قائمة المانهوا...</p>
+
+    <div class="admin-link">
+        <a href="admin.html">لوحة تحكم الرفع</a>
     </div>
 
-    <p style="margin-top: 50px;"><a href="./admin.html">لوحة تحكم الرفع</a></p>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadMangaList);
+
+        async function loadMangaList() {
+            const container = document.getElementById('manga-container');
+            const statusElement = document.getElementById('status');
+            
+            try {
+                // جلب ملف JSON من مسار data/manga_list.json
+                const response = await fetch('./data/manga_list.json');
+                
+                if (!response.ok) {
+                    statusElement.innerText = 'خطأ: فشل في جلب ملف قاعدة البيانات.';
+                    statusElement.style.color = 'red';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.manga || data.manga.length === 0) {
+                    statusElement.innerText = 'لا توجد مانهوا متاحة حاليًا.';
+                    statusElement.style.color = 'yellow';
+                    return;
+                }
+
+                container.innerHTML = ''; // مسح رسالة "جاري التحميل"
+
+                data.manga.forEach(manga => {
+                    // فرز الفصول حسب الرقم للعثور على الأحدث
+                    manga.chapters.sort((a, b) => b.chapter_number - a.chapter_number);
+                    const latestChapter = manga.chapters[0];
+
+                    const card = document.createElement('a');
+                    // الرابط يوجه إلى صفحة reader.html مع إرسال ID ورقم الفصل
+                    card.href = `reader.html?id=${manga.id}&chapter=${latestChapter.chapter_number}`;
+                    card.className = 'manga-card';
+
+                    const coverImg = document.createElement('img');
+                    coverImg.src = manga.cover_image;
+                    coverImg.alt = manga.title;
+                    coverImg.className = 'manga-cover';
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'manga-info';
+
+                    const titleH3 = document.createElement('h3');
+                    titleH3.className = 'manga-title';
+                    titleH3.innerText = manga.title;
+
+                    const latestP = document.createElement('p');
+                    latestP.className = 'latest-chapter';
+                    latestP.innerText = `أحدث فصل: ${latestChapter.title}`;
+
+                    infoDiv.appendChild(titleH3);
+                    infoDiv.appendChild(latestP);
+                    card.appendChild(coverImg);
+                    card.appendChild(infoDiv);
+                    container.appendChild(card);
+                });
+
+                // مسح رسالة الحالة إذا نجح التحميل
+                statusElement.style.display = 'none';
+
+            } catch (error) {
+                statusElement.innerText = `حدث خطأ أثناء التحميل: ${error.message}`;
+                statusElement.style.color = 'red';
+                console.error(error);
+            }
+        }
+    </script>
 </body>
 </html>
-document.addEventListener('DOMContentLoaded', loadMangaList);
-
-async function loadMangaList() {
-    const listContainer = document.getElementById('manga-list');
-    listContainer.innerHTML = ''; // إزالة رسالة "جاري تحميل قائمة المانهوا..."
-
-    try {
-        // جلب ملف قاعدة البيانات
-        const response = await fetch('./data/manga_list.json');
-        if (!response.ok) {
-            listContainer.innerHTML = '<p style="color: red;">فشل في تحميل قاعدة بيانات المانهوا.</p>';
-            return;
-        }
-
-        const data = await response.json();
-        
-        if (data.manga.length === 0) {
-            listContainer.innerHTML = '<p>لا توجد مانهوا منشورة بعد. يرجى البدء بالرفع من لوحة التحكم.</p>';
-            return;
-        }
-
-        // عرض كل مانهوا
-        data.manga.forEach(manga => {
-            const chapterCount = manga.chapters.length;
-            const card = document.createElement('div');
-            card.className = 'manga-card';
-            
-            card.innerHTML = `
-                <h2>${manga.title}</h2>
-                <p>عدد الفصول: ${chapterCount} - آخر فصل: ${manga.chapters[chapterCount - 1].title}</p>
-                <p>${manga.description}</p>
-                `;
-            listContainer.appendChild(card);
-        });
-
-    } catch (error) {
-        listContainer.innerHTML = '<p style="color: red;">حدث خطأ أثناء معالجة البيانات.</p>';
-        console.error('Error loading manga list:', error);
-    }
-}
