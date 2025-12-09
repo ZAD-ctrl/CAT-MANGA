@@ -48,7 +48,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        /* تنسيق اللوجو - تم استبداله بالصورة */
+        /* تنسيق اللوجو (الشعار) - تم التعديل على المسار */
         .logo-link {
             height: 40px; 
             display: flex;
@@ -59,7 +59,6 @@
             width: auto;
             border-radius: 50%;
         }
-        /* إخفاء النص الافتراضي CAT-MANGA */
         .logo-text { 
             display: none; 
         }
@@ -159,7 +158,7 @@
 
     <div class="header-bar">
         <a href="index.html" class="logo-link">
-            <img src="unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
+            <img src="assets/unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
         </a>
         
         <div class="nav-icons">
@@ -276,7 +275,6 @@
         // تحديث محتوى ملف JSON على GitHub
         async function updateFile(filePath, content, message, sha, patToken) {
             const url = BASE_API_URL + filePath;
-            // تشفير المحتوى إلى Base64
             const contentBase64 = btoa(unescape(encodeURIComponent(content))); 
             
             const payload = {
