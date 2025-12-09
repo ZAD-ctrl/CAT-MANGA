@@ -35,7 +35,7 @@
             background-color: var(--bg-color);
             color: var(--main-text-color);
             transition: background-color 0.3s, color 0.3s;
-            text-align: center; /* لضمان توسيط صور المانهوا */
+            text-align: center;
         }
 
         /* تنسيق شريط الترويسة */
@@ -51,7 +51,7 @@
             z-index: 1000;
         }
 
-        /* تنسيق اللوجو - تم استبداله بالصورة */
+        /* تنسيق اللوجو (الشعار) - تم التعديل على المسار */
         .logo-link {
             height: 40px; 
             display: flex;
@@ -60,7 +60,7 @@
         .logo-image {
             height: 100%; 
             width: auto;
-            border-radius: 50%; /* لجعل اللوجو دائريًا إذا كانت الصورة مناسبة */
+            border-radius: 50%;
         }
 
         .chapter-info {
@@ -129,7 +129,7 @@
 
     <div class="header-bar">
         <a href="index.html" class="logo-link">
-            <img src="unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
+            <img src="assets/unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
         </a>
         
         <div class="chapter-info">
@@ -195,4 +195,85 @@
             const nextBtn = document.getElementById('next-chapter-btn');
             
             // تحقق من وجود البيانات الأساسية
-            if (!mangaId || isNaN(chapterNum))
+            if (!mangaId || isNaN(chapterNum)) {
+                titleElement.innerText = "خطأ في الرابط";
+                container.innerHTML = `<p style="color:red; font-size:1.5em; padding: 50px;">الرجاء التأكد من رابط المانهوا والفصل.</p>`;
+                return;
+            }
+
+            try {
+                // 1. جلب قائمة المانهوا
+                const response = await fetch(BASE_URL + DATA_FILE_PATH);
+                if (!response.ok) throw new Error('فشل جلب قائمة المانهوا.');
+                const data = await response.json();
+                
+                const mangaItem = data.manga.find(m => m.id === mangaId);
+                if (!mangaItem) throw new Error('المانهوا غير موجودة في قاعدة البيانات.');
+                
+                // التأكد من أن الفصول مرتبة تنازلياً حسب رقم الفصل في قاعدة البيانات
+                mangaItem.chapters.sort((a, b) => b.chapter_number - a.chapter_number);
+                
+                const chapterIndex = mangaItem.chapters.findIndex(c => c.chapter_number === chapterNum);
+                
+                if (chapterIndex === -1) {
+                    chapterNum = mangaItem.chapters[0].chapter_number;
+                }
+                
+                const chapter = mangaItem.chapters.find(c => c.chapter_number === chapterNum);
+                if (!chapter) throw new Error('الفصل المحدد غير موجود.');
+                
+                // 2. تحديث شريط العنوان
+                titleElement.innerText = `${mangaItem.title} - الفصل ${chapter.chapter_number} - ${chapter.title}`;
+                document.getElementById('page-title').innerText = `${mangaItem.title} | فصل ${chapter.chapter_number}`;
+
+
+                // 3. عرض صور الفصل
+                container.innerHTML = ''; 
+                
+                chapter.pages.forEach(pagePath => {
+                    const img = document.createElement('img');
+                    img.src = BASE_URL + pagePath;
+                    img.alt = `${mangaItem.title} - صفحة ${pagePath.split('/').pop()}`;
+                    img.classList.add('manga-page');
+                    container.appendChild(img);
+                });
+
+                // 4. تحديث أزرار التنقل
+                const nextChapterNumber = chapterNum + 1;
+                const prevChapterNumber = chapterNum - 1;
+                
+                // التحقق من وجود الفصل التالي
+                const hasNext = mangaItem.chapters.some(c => c.chapter_number === nextChapterNumber);
+                nextBtn.disabled = !hasNext;
+                nextBtn.onclick = () => window.location.href = `reader.html?id=${mangaId}&chapter=${nextChapterNumber}`;
+                
+                // التحقق من وجود الفصل السابق
+                const hasPrev = mangaItem.chapters.some(c => c.chapter_number === prevChapterNumber);
+                prevBtn.disabled = !hasPrev;
+                prevBtn.onclick = () => window.location.href = `reader.html?id=${mangaId}&chapter=${prevChapterNumber}`;
+
+                if (!hasNext) {
+                    nextBtn.innerText = "آخر فصل";
+                } else {
+                    nextBtn.innerHTML = `الفصل التالي <i class="fas fa-arrow-left"></i>`;
+                }
+
+
+            } catch (error) {
+                console.error('Error loading chapter:', error);
+                titleElement.innerText = "خطأ في التحميل";
+                container.innerHTML = `<p style="color:red; font-size:1.2em; padding: 30px;">حدث خطأ أثناء تحميل الفصل: ${error.message}</p>`;
+            }
+        }
+        
+        function navigateToChapter(direction) {
+            // هذه الدالة موجودة للتوافق، لكن التنقل يتم مباشرة عبر onclick في loadChapter
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupThemeToggle();
+            loadChapter();
+        });
+    </script>
+</body>
+</html>
