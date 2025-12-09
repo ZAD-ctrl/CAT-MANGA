@@ -2,10 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>CAT-MANGA | أحدث المانهوا</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT-MANGA | الرئيسية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* الألوان الافتراضية (الوضع الداكن - Dark Mode) */
+        /* ------------------ الوضع الداكن والفاااتح -------------------- */
         :root {
             --bg-color: #0d1117;
             --main-text-color: #c9d1d9;
@@ -13,9 +14,10 @@
             --border-color: #30363d;
             --accent-color: #58a6ff;
             --card-bg: #161b22;
+            --chapter-link-bg: #21262d;
+            --chapter-link-hover: #30363d;
         }
 
-        /* الألوان للوضع الفاتح (Light Mode) */
         body.light-mode {
             --bg-color: #f6f8fa;
             --main-text-color: #24292f;
@@ -23,38 +25,46 @@
             --border-color: #e1e4e8;
             --accent-color: #0366d6;
             --card-bg: #ffffff;
+            --chapter-link-bg: #f3f4f6;
+            --chapter-link-hover: #e1e4e8;
         }
+        /* -------------------------------------------------------------- */
 
         body {
             font-family: Tahoma, sans-serif;
-            text-align: right;
             margin: 0;
+            padding: 0;
             background-color: var(--bg-color);
             color: var(--main-text-color);
             transition: background-color 0.3s, color 0.3s;
         }
-        
-        /* -------------------------------------- */
-        /* شريط الترويسة (Header) */
+
+        /* تنسيق شريط الترويسة */
         .header-bar {
             background-color: var(--header-bg);
-            padding: 15px 20px;
+            padding: 10px 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-
-        .logo-container {
+        
+        /* تنسيق اللوجو (الشعار) - تم التعديل على المسار */
+        .logo-link {
+            height: 40px; 
             display: flex;
             align-items: center;
         }
-
-        .logo-text {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--accent-color);
-            margin-right: 15px; /* مسافة عن أيقونة اللوجو إذا أضفتها */
+        .logo-image {
+            height: 100%; 
+            width: auto;
+            border-radius: 50%;
+        }
+        .logo-text { 
+            display: none; 
         }
 
         .nav-icons button {
@@ -62,188 +72,159 @@
             border: none;
             color: var(--main-text-color);
             font-size: 1.2em;
-            margin-right: 15px;
+            margin-left: 15px;
             cursor: pointer;
             transition: color 0.2s;
         }
         .nav-icons button:hover {
             color: var(--accent-color);
         }
-        
-        /* -------------------------------------- */
 
-        h1 {
-            color: var(--accent-color);
-            text-align: center;
-            margin: 30px 0;
-            font-size: 2em;
-        }
-
-        .manga-grid {
+        /* تنسيق حاوية القائمة */
+        .manga-list-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            padding: 0 20px 40px;
         }
 
+        /* تنسيق بطاقة المانهوا */
         .manga-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
-            width: 250px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-decoration: none;
-            color: var(--main-text-color);
-            display: block;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .manga-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .manga-image-wrapper {
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .manga-cover {
             width: 100%;
-            height: 350px;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .manga-card:hover .manga-cover {
+            transform: scale(1.05);
         }
 
-        .manga-info {
+        .manga-details {
             padding: 15px;
+            text-align: right;
+            flex-grow: 1;
         }
 
         .manga-title {
-            font-size: 1.2em;
-            margin: 0 0 5px 0;
-            white-space: nowrap;
+            color: var(--accent-color);
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .chapter-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+
+        .chapter-list li {
+            margin-bottom: 8px;
+        }
+
+        .chapter-link {
+            display: block;
+            padding: 8px;
+            background-color: var(--chapter-link-bg);
+            color: var(--main-text-color);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.2s;
             overflow: hidden;
+            white-space: nowrap;
             text-overflow: ellipsis;
         }
 
-        .latest-chapter {
-            font-size: 0.9em;
-            color: #8b949e;
-        }
-
-        #status {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 1.1em;
-            color: yellow;
-        }
-
-        .admin-link {
-            text-align: center;
-            margin-top: 40px;
-            padding-bottom: 20px;
-        }
-        .admin-link a {
+        .chapter-link:hover {
+            background-color: var(--chapter-link-hover);
             color: var(--accent-color);
-            text-decoration: none;
-            font-weight: bold;
+        }
+
+        #loading-message {
+            width: 100%;
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5em;
+            color: var(--accent-color);
+        }
+        
+        /* شريط التمرير مخصص (لمسة جمالية) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .manga-list-container {
+                gap: 15px;
+            }
+            .manga-card {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    
+
     <div class="header-bar">
-        <div class="logo-container">
-            <span class="logo-text">CAT-MANGA</span>
-        </div>
+        <a href="index.html" class="logo-link">
+            <img src="assets/unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
+        </a>
+        
         <div class="nav-icons">
-            <button id="search-btn"><i class="fas fa-search"></i></button>
             <button id="theme-toggle"><i class="fas fa-sun"></i></button>
         </div>
     </div>
 
-    <h1>أحدث المانهوا المترجمة</h1>
-
-    <div class="manga-grid" id="manga-container">
-        </div>
-    
-    <p id="status">جاري تحميل قائمة المانهوا...</p>
-
-    <div class="admin-link">
-        <a href="admin.html">لوحة تحكم الرفع</a>
+    <div class="manga-list-container" id="manga-list-container">
+        <p id="loading-message">جاري تحميل قائمة المانهوا...</p>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMangaList();
-            setupThemeToggle();
-            setupSearchButton();
-        });
-        
-        // ----------------------------------------------------------------
-        // وظيفة جلب وعرض قائمة المانهوا
-        async function loadMangaList() {
-            // الكود الخاص بـ loadMangaList هو نفسه الذي أرسلته لك مسبقاً،
-            // لذلك لن أكرره هنا لتوفير المساحة، لكن تأكد من وجوده في ملفك.
-            // (تأكد من وجود جميع الدوال المذكورة في الرد السابق)
-            const container = document.getElementById('manga-container');
-            const statusElement = document.getElementById('status');
-            
-            try {
-                const response = await fetch('./data/manga_list.json');
-                
-                if (!response.ok) {
-                    statusElement.innerText = 'خطأ: فشل في جلب ملف قاعدة البيانات.';
-                    statusElement.style.color = 'red';
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (!data.manga || data.manga.length === 0) {
-                    statusElement.innerText = 'لا توجد مانهوا متاحة حاليًا.';
-                    statusElement.style.color = 'yellow';
-                    return;
-                }
-
-                container.innerHTML = ''; 
-
-                data.manga.forEach(manga => {
-                    manga.chapters.sort((a, b) => b.chapter_number - a.chapter_number);
-                    const latestChapter = manga.chapters[0];
-
-                    const card = document.createElement('a');
-                    card.href = `reader.html?id=${manga.id}&chapter=${latestChapter.chapter_number}`;
-                    card.className = 'manga-card';
-
-                    const coverImg = document.createElement('img');
-                    coverImg.src = manga.cover_image;
-                    coverImg.alt = manga.title;
-                    coverImg.className = 'manga-cover';
-
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'manga-info';
-
-                    const titleH3 = document.createElement('h3');
-                    titleH3.className = 'manga-title';
-                    titleH3.innerText = manga.title;
-
-                    const latestP = document.createElement('p');
-                    latestP.className = 'latest-chapter';
-                    latestP.innerText = `أحدث فصل: ${latestChapter.title}`;
-
-                    infoDiv.appendChild(titleH3);
-                    infoDiv.appendChild(latestP);
-                    card.appendChild(coverImg);
-                    card.appendChild(infoDiv);
-                    container.appendChild(card);
-                });
-
-                statusElement.style.display = 'none';
-
-            } catch (error) {
-                statusElement.innerText = `حدث خطأ أثناء التحميل: ${error.message}`;
-                statusElement.style.color = 'red';
-                console.error(error);
-            }
-        }
+        const GITHUB_USERNAME = 'zad-ctrl';
+        const REPO_NAME = 'CAT-MANGA';
+        const DATA_FILE_PATH = 'data/manga_list.json';
+        const BASE_URL = `https://${GITHUB_USERNAME}.github.io/${REPO_NAME}/`;
 
         // ----------------------------------------------------------------
         // وظيفة تبديل الإضاءة (الوضع الداكن/الفاتح)
@@ -252,10 +233,9 @@
             const currentTheme = localStorage.getItem('theme') || 'dark';
             const icon = toggleButton.querySelector('i');
 
-            // تطبيق الثيم المحفوظ
             if (currentTheme === 'light') {
                 document.body.classList.add('light-mode');
-                icon.classList.replace('fa-sun', 'fa-moon'); // أيقونة القمر للتبديل للوضع الداكن
+                icon.classList.replace('fa-sun', 'fa-moon');
             }
 
             toggleButton.addEventListener('click', () => {
@@ -269,19 +249,105 @@
                     theme = 'dark';
                     icon.classList.replace('fa-moon', 'fa-sun');
                 }
-                // حفظ الثيم الجديد
                 localStorage.setItem('theme', theme);
             });
         }
         
         // ----------------------------------------------------------------
-        // وظيفة زر البحث (بسيطة حاليًا)
-        function setupSearchButton() {
-            document.getElementById('search-btn').addEventListener('click', () => {
-                alert('وظيفة البحث قيد التنفيذ!');
-                // في المستقبل، يمكنك فتح شريط بحث هنا
-            });
-        }
-    </script>
-</body>
-</html>
+        // وظيفة جلب وعرض قائمة المانهوا
+        async function loadMangaList() {
+            const container = document.getElementById('manga-list-container');
+            container.innerHTML = `<p id="loading-message">جاري تحميل قائمة المانهوا...</p>`;
+
+            try {
+                // جلب الملف من المسار المنشور
+                const response = await fetch(BASE_URL + DATA_FILE_PATH);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                         // إذا كان ملف JSON غير موجود (لأنك لم ترفع فصلاً بعد)
+                         container.innerHTML = `<p id="loading-message" style="color:red;">
+                            لم يتم العثور على قاعدة بيانات المانهوا.
+                            <br>
+                            يرجى استخدام <a href="admin.html" style="color:var(--accent-color);">صفحة الرفع</a> لإضافة أول فصل.
+                         </p>`;
+                         return;
+                    }
+                    throw new Error(`فشل جلب الملف: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // فرز المانهوا ترتيباً أبجدياً (للتنظيم)
+                const sortedManga = data.manga.sort((a, b) => a.title.localeCompare(b.title));
+
+                container.innerHTML = ''; // مسح رسالة التحميل
+
+                if (sortedManga.length === 0) {
+                    container.innerHTML = `<p id="loading-message">
+                        لا توجد مانهوا متاحة حالياً.
+                        <br>
+                        يرجى استخدام <a href="admin.html" style="color:var(--accent-color);">صفحة الرفع</a> لإضافة أول فصل.
+                    </p>`;
+                    return;
+                }
+
+                sortedManga.forEach(manga => {
+                    // فرز الفصول ترتيباً تنازلياً (الأحدث أولاً)
+                    const sortedChapters = manga.chapters.sort((a, b) => b.chapter_number - a.chapter_number);
+                    
+                    const card = document.createElement('div');
+                    card.classList.add('manga-card');
+
+                    // جزء صورة الغلاف
+                    const imageWrapper = document.createElement('div');
+                    imageWrapper.classList.add('manga-image-wrapper');
+                    const cover = document.createElement('img');
+                    cover.src = BASE_URL + (manga.cover_image || 'assets/default_cover.jpg'); 
+                    cover.alt = `غلاف ${manga.title}`;
+                    cover.classList.add('manga-cover');
+                    imageWrapper.appendChild(cover);
+                    
+                    // جعل الغلاف رابطاً لأحدث فصل
+                    if (sortedChapters.length > 0) {
+                        const latestChapter = sortedChapters[0].chapter_number;
+                        const linkWrapper = document.createElement('a');
+                        linkWrapper.href = `reader.html?id=${manga.id}&chapter=${latestChapter}`;
+                        linkWrapper.appendChild(cover);
+                        imageWrapper.appendChild(linkWrapper);
+                    }
+                    
+                    // جزء التفاصيل
+                    const details = document.createElement('div');
+                    details.classList.add('manga-details');
+
+                    const title = document.createElement('h2');
+                    title.classList.add('manga-title');
+                    title.innerText = manga.title;
+
+                    const chapterList = document.createElement('ul');
+                    chapterList.classList.add('chapter-list');
+                    
+                    // عرض آخر 5 فصول (أو جميعها إذا كانت أقل من 5)
+                    const chaptersToShow = sortedChapters.slice(0, 5); 
+
+                    chaptersToShow.forEach(chapter => {
+                        const listItem = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.classList.add('chapter-link');
+                        link.href = `reader.html?id=${manga.id}&chapter=${chapter.chapter_number}`;
+                        link.innerText = `فصل ${chapter.chapter_number}: ${chapter.title}`;
+                        
+                        listItem.appendChild(link);
+                        chapterList.appendChild(listItem);
+                    });
+                    
+                    // إضافة زر لعرض المزيد من الفصول (يمكن تطويره لاحقاً)
+                    if (sortedChapters.length > 5) {
+                        const moreItem = document.createElement('li');
+                        const moreLink = document.createElement('span');
+                        moreLink.innerText = `... والمزيد (${sortedChapters.length - 5} فصول إضافية)`;
+                        moreLink.style.color = 'var(--nav-link-color)';
+                        moreLink.style.textAlign = 'center';
+                        moreItem.appendChild(moreLink);
+                        chapterList.appendChild(moreItem);
+                    }
