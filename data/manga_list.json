@@ -1,0 +1,20 @@
+{
+  "manga": [
+    {
+      "id": "demo-manga",
+      "title": "مانهوا تجريبية",
+      "cover_image": "uploads/demo-cover.jpg",
+      "description": "هذا وصف المانهوا التجريبية الأولى التي ستقوم برفعها.",
+      "chapters": [
+        {
+          "chapter_number": 1,
+          "title": "الفصل الأول",
+          "pages": [
+            "uploads/demo-manga/c1/page1.jpg",
+            "uploads/demo-manga/c1/page2.jpg"
+          ]
+        }
+      ]
+    }
+  ]
+}
