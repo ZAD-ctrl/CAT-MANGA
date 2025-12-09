@@ -60,8 +60,14 @@
         .logo-image {
             height: 100%; 
             width: auto;
-            border-radius: 50%;
+            /* تم إزالة border-radius: 50% لعدم ظهور الصورة داخل دائرة */
         }
+        .logo-text { 
+            color: var(--main-text-color);
+            font-size: 1.5em;
+            margin-right: 15px; /* مسافة بين اللوجو واسم الموقع */
+        }
+
 
         .chapter-info {
             flex-grow: 1;
@@ -130,7 +136,7 @@
     <div class="header-bar">
         <a href="index.html" class="logo-link">
             <img src="assets/unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
-        </a>
+            <span class="logo-text">CAT-MANGA</span> </a>
         
         <div class="chapter-info">
             <h2 class="chapter-title" id="chapter-title">جاري تحميل الفصل...</h2>
@@ -165,6 +171,9 @@
             if (currentTheme === 'light') {
                 document.body.classList.add('light-mode');
                 icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                document.body.classList.remove('light-mode');
+                icon.classList.replace('fa-moon', 'fa-sun');
             }
 
             toggleButton.addEventListener('click', () => {
