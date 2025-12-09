@@ -3,7 +3,7 @@
     {
       "id": "demo-manga",
       "title": "مانهوا تجريبية",
-      "cover_image": "uploads/demo-cover.jpg",
+      "cover_image": "uploads/demo-manga/cover.jpg", 
       "description": "هذا وصف المانهوا التجريبية الأولى التي ستقوم برفعها.",
       "chapters": [
         {
@@ -12,6 +12,15 @@
           "pages": [
             "uploads/demo-manga/c1/page1.jpg",
             "uploads/demo-manga/c1/page2.jpg"
+          ]
+        },
+        {
+          "chapter_number": 2,
+          "title": "الفصل الثاني - بداية المغامرة",
+          "pages": [
+            "uploads/demo-manga/c2/p1.jpg",
+            "uploads/demo-manga/c2/p2.jpg" 
+            // المسارات يجب أن تكون دقيقة لصور الفصل الثاني التي رفعتها
           ]
         }
       ]
