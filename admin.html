@@ -1,43 +1,194 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>CAT-MANGA | لوحة التحكم</title>
-    <style>
-        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
-        input[type="text"], button, textarea, select {
-            padding: 10px; margin-top: 10px; display: block; width: 100%; box-sizing: border-box; 
-            border: 1px solid #30363d; background-color: #0d1117; color: #c9d1d9; border-radius: 6px;
-        }
-        button { background-color: #238636; border: none; cursor: pointer; margin-top: 20px; }
-        button:hover { background-color: #2ea043; }
-        .warning { color: yellow; border: 1px dashed yellow; padding: 10px; margin-bottom: 20px; }
-    </style>
+    <meta charset="UTF-8">
+    <title>CAT-MANGA | لوحة التحكم</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
+        input[type="text"], button, textarea, select, input[type="file"], input[type="number"] { /* أضفت أنواع الإدخال هنا */
+            padding: 10px; margin-top: 10px; display: block; width: 100%; box-sizing: border-box; 
+            border: 1px solid #30363d; background-color: #0d1117; color: #c9d1d9; border-radius: 6px;
+        }
+        button { background-color: #238636; border: none; cursor: pointer; margin-top: 20px; }
+        button:hover { background-color: #2ea043; }
+        .warning { color: yellow; border: 1px dashed yellow; padding: 10px; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-    <h1>لوحة رفع فصول المانهوا</h1>
+    <h1>لوحة رفع فصول المانهوا</h1>
 
-    <div class="warning">
-        تحذير: هذه الصفحة خاصة بك فقط! لا تشارك رابطها.
-    </div>
+    <div class="warning">
+        تحذير: هذه الصفحة خاصة بك فقط! لا تشارك رابطها.
+    </div>
 
-    <label for="manga_id">اسم المانهوا (بالانجليزي، لا يوجد مسافات):</label>
-    <input type="text" id="manga_id" value="demo-manga">
+        <label for="manga_id">اسم المانهوا (بالانجليزي، لا يوجد مسافات):</label>
+    <input type="text" id="manga_id" value="demo-manga">
 
-    <label for="chapter_number">رقم الفصل:</label>
-    <input type="number" id="chapter_number" value="2">
+    <label for="chapter_number">رقم الفصل:</label>
+    <input type="number" id="chapter_number" value="2">
 
-    <label for="chapter_title">عنوان الفصل:</label>
-    <input type="text" id="chapter_title" value="الفصل الثاني - بداية المغامرة">
+    <label for="chapter_title">عنوان الفصل:</label>
+    <input type="text" id="chapter_title" value="الفصل الثاني - بداية المغامرة">
 
-    <label for="chapter_images">صور صفحات الفصل (اختر صور متعددة):</label>
-    <input type="file" id="chapter_images" accept="image/*" multiple>
+    <label for="chapter_images">صور صفحات الفصل (اختر صور متعددة):</label>
+    <input type="file" id="chapter_images" accept="image/*" multiple>
 
-    <button onclick="startUpload()">بدء الرفع</button>
-    <p id="status_message" style="margin-top: 15px; color: #58a6ff;">حالة الرفع: في الانتظار...</p>
+    <button onclick="startUpload()">بدء الرفع</button>
+    <p id="status_message" style="margin-top: 15px; color: #58a6ff;">حالة الرفع: في الانتظار...</p>
+        <script>
+        const GITHUB_USERNAME = "ZAD-ctrl"; // اسم المستخدم الخاص بك
+        const GITHUB_REPO = "CAT-MANGA";   // اسم المستودع
+        const DATA_FILE_PATH = "data/manga_list.json"; 
 
-    <script>
-        // سنضيف كود JavaScript الخاص بالرفع هنا في الخطوة التالية
-    </script>
+        // 1. طلب الـ Token وتخزينه
+        let token = localStorage.getItem('github_token') || prompt('من فضلك أدخل مفتاح الوصول (PAT Token) الخاص بك:');
+        localStorage.setItem('github_token', token);
+
+        if (!token) {
+            document.getElementById('status_message').innerText = 'تم إلغاء العملية. يجب إدخال المفتاح لبدء الرفع.';
+        }
+
+        // ----------------------------------------------------------------------
+        // 2. وظيفة تحويل الصورة إلى Base64
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]); 
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // ----------------------------------------------------------------------
+        // 3. وظيفة الرفع الرئيسية
+        async function startUpload() {
+            if (!token) {
+                alert('يرجى إعادة تحميل الصفحة وإدخال المفتاح أولاً.');
+                return;
+            }
+
+            const imagesInput = document.getElementById('chapter_images');
+            const files = imagesInput.files;
+            const mangaId = document.getElementById('manga_id').value.trim();
+            const chapterNum = parseInt(document.getElementById('chapter_number').value.trim());
+            const chapterTitle = document.getElementById('chapter_title').value.trim();
+            const status = document.getElementById('status_message');
+
+            if (files.length === 0 || !mangaId || isNaN(chapterNum)) {
+                status.style.color = 'red';
+                status.innerText = 'الرجاء ملء جميع الحقول واختيار الصور.';
+                return;
+            }
+
+            status.style.color = '#58a6ff';
+            status.innerText = `بدء رفع الفصل ${chapterNum} (${files.length} صفحة)...`;
+            
+            const pagesPaths = [];
+
+            // رفع كل صورة على حدة
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const pageFileName = `p${i + 1}.${file.name.split('.').pop()}`;
+                const filePath = `uploads/${mangaId}/c${chapterNum}/${pageFileName}`;
+                
+                try {
+                    const contentBase64 = await getBase64(file);
+                    status.innerText = `رفع الصفحة ${i + 1} من ${files.length}...`;
+
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${filePath}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `[MANGA UPLOAD] Adding page ${i + 1} to chapter ${chapterNum} of ${mangaId}`,
+                            content: contentBase64
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`فشل رفع الصفحة ${i + 1}.`);
+                    
+                    pagesPaths.push(filePath);
+
+                } catch (error) {
+                    status.style.color = 'red';
+                    status.innerText = `فشل رفع الصفحة ${i + 1}. توقف الرفع.`;
+                    console.error(error);
+                    return;
+                }
+            }
+
+            // تحديث ملف JSON بعد نجاح رفع الصور
+            status.style.color = 'yellow';
+            status.innerText = 'تم رفع جميع الصور بنجاح. جاري تحديث قاعدة البيانات (JSON)...';
+
+            await updateJsonFile(mangaId, chapterNum, chapterTitle, pagesPaths, status);
+        }
+
+        // ----------------------------------------------------------------------
+        // 4. وظيفة تحديث ملف الـ JSON
+        async function updateJsonFile(mangaId, chapterNum, chapterTitle, pagesPaths, statusElement) {
+            try {
+                // جلب المحتوى الحالي للملف
+                const fetchResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!fetchResponse.ok) throw new Error("فشل جلب ملف JSON الحالي.");
+
+                const data = await fetchResponse.json();
+                const sha = data.sha; 
+                const jsonContentBase64 = data.content;
+                const currentJsonContent = JSON.parse(atob(jsonContentBase64));
+
+                // إضافة الفصل الجديد للبيانات
+                let mangaEntry = currentJsonContent.manga.find(m => m.id === mangaId);
+                if (!mangaEntry) {
+                     mangaEntry = {
+                        "id": mangaId,
+                        "title": chapterTitle.split(' - ')[0], 
+                        "cover_image": "uploads/default-cover.jpg", 
+                        "description": "وصف مبدئي...",
+                        "chapters": []
+                     };
+                     currentJsonContent.manga.push(mangaEntry);
+                }
+
+                mangaEntry.chapters.push({
+                    "chapter_number": chapterNum,
+                    "title": chapterTitle,
+                    "pages": pagesPaths
+                });
+
+                // تشفير البيانات الجديدة وإرسالها
+                const newJsonContent = JSON.stringify(currentJsonContent, null, 2);
+                const newContentBase64 = btoa(unescape(encodeURIComponent(newJsonContent)));
+
+                const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `[MANGA UPLOAD] Update JSON: Added Chapter ${chapterNum} for ${mangaId}`,
+                        content: newContentBase64,
+                        sha: sha 
+                    })
+                });
+
+                if (!updateResponse.ok) throw new Error("فشل تحديث ملف JSON.");
+
+                statusElement.style.color = 'lightgreen';
+                statusElement.innerText = '✅ تم الرفع والتحديث بنجاح!';
+
+            } catch (error) {
+                statusElement.style.color = 'red';
+                statusElement.innerText = `فشل في تحديث قاعدة البيانات: ${error.message}`;
+                console.error(error);
+            }
+        }
+    </script>
 </body>
 </html>
