@@ -192,3 +192,49 @@
     </script>
 </body>
 </html>
+<style>
+        body { font-family: Tahoma, sans-serif; text-align: right; margin: 50px; background-color: #161b22; color: #c9d1d9; }
+        /* تحديث شامل لتنسيق الحقول */
+        input[type="text"], input[type="number"], input[type="file"], textarea, select {
+            padding: 12px; 
+            margin-top: 8px; 
+            margin-bottom: 15px; 
+            display: block; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border: 1px solid #30363d; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            border-radius: 6px;
+            transition: border-color 0.3s; /* تأثير عند التركيز */
+        }
+        /* تأثير التركيز (Focus) */
+        input:focus, textarea:focus {
+            border-color: #58a6ff;
+            outline: none;
+        }
+
+        button { 
+            background-color: #238636; 
+            color: white;
+            border: none; 
+            cursor: pointer; 
+            margin-top: 20px; 
+            padding: 15px; /* زيادة حجم الزر */
+            font-size: 1.1em;
+            width: 100%;
+            border-radius: 6px;
+        }
+        button:hover { background-color: #2ea043; }
+        
+        .warning { color: yellow; border: 1px dashed yellow; padding: 15px; margin-bottom: 30px; border-radius: 6px; }
+        
+        /* تنسيق لرسالة الحالة */
+        #status_message {
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+    </style>
