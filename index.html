@@ -20,3 +20,43 @@
     <p style="margin-top: 50px;"><a href="./admin.html">لوحة تحكم الرفع</a></p>
 </body>
 </html>
+document.addEventListener('DOMContentLoaded', loadMangaList);
+
+async function loadMangaList() {
+    const listContainer = document.getElementById('manga-list');
+    listContainer.innerHTML = ''; // إزالة رسالة "جاري تحميل قائمة المانهوا..."
+
+    try {
+        // جلب ملف قاعدة البيانات
+        const response = await fetch('./data/manga_list.json');
+        if (!response.ok) {
+            listContainer.innerHTML = '<p style="color: red;">فشل في تحميل قاعدة بيانات المانهوا.</p>';
+            return;
+        }
+
+        const data = await response.json();
+        
+        if (data.manga.length === 0) {
+            listContainer.innerHTML = '<p>لا توجد مانهوا منشورة بعد. يرجى البدء بالرفع من لوحة التحكم.</p>';
+            return;
+        }
+
+        // عرض كل مانهوا
+        data.manga.forEach(manga => {
+            const chapterCount = manga.chapters.length;
+            const card = document.createElement('div');
+            card.className = 'manga-card';
+            
+            card.innerHTML = `
+                <h2>${manga.title}</h2>
+                <p>عدد الفصول: ${chapterCount} - آخر فصل: ${manga.chapters[chapterCount - 1].title}</p>
+                <p>${manga.description}</p>
+                `;
+            listContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        listContainer.innerHTML = '<p style="color: red;">حدث خطأ أثناء معالجة البيانات.</p>';
+        console.error('Error loading manga list:', error);
+    }
+}
