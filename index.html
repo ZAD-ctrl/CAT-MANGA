@@ -3,20 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <title>CAT-MANGA | أحدث المانهوا</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* الألوان الافتراضية (الوضع الداكن - Dark Mode) */
+        :root {
+            --bg-color: #0d1117;
+            --main-text-color: #c9d1d9;
+            --header-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --card-bg: #161b22;
+        }
+
+        /* الألوان للوضع الفاتح (Light Mode) */
+        body.light-mode {
+            --bg-color: #f6f8fa;
+            --main-text-color: #24292f;
+            --header-bg: #ffffff;
+            --border-color: #e1e4e8;
+            --accent-color: #0366d6;
+            --card-bg: #ffffff;
+        }
+
         body {
             font-family: Tahoma, sans-serif;
             text-align: right;
             margin: 0;
-            padding: 20px;
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background-color: var(--bg-color);
+            color: var(--main-text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* -------------------------------------- */
+        /* شريط الترويسة (Header) */
+        .header-bar {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-right: 15px; /* مسافة عن أيقونة اللوجو إذا أضفتها */
+        }
+
+        .nav-icons button {
+            background: none;
+            border: none;
+            color: var(--main-text-color);
+            font-size: 1.2em;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .nav-icons button:hover {
+            color: var(--accent-color);
+        }
+        
+        /* -------------------------------------- */
+
         h1 {
-            color: #58a6ff;
+            color: var(--accent-color);
             text-align: center;
-            margin-bottom: 30px;
+            margin: 30px 0;
+            font-size: 2em;
         }
 
         .manga-grid {
@@ -24,19 +84,19 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
+            padding: 0 20px 40px;
         }
 
-        /* تنسيق بطاقة المانهوا */
         .manga-card {
-            background-color: #161b22;
-            border: 1px solid #30363d;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
             width: 250px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
-            text-decoration: none; /* لإزالة التسطير من الرابط */
-            color: inherit;
+            text-decoration: none;
+            color: var(--main-text-color);
             display: block;
         }
 
@@ -47,8 +107,8 @@
 
         .manga-cover {
             width: 100%;
-            height: 350px; /* ارتفاع ثابت للغلاف */
-            object-fit: cover; /* لضمان ملء الصورة دون تشوه */
+            height: 350px;
+            object-fit: cover;
         }
 
         .manga-info {
@@ -60,7 +120,7 @@
             margin: 0 0 5px 0;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* لإظهار النقاط إذا كان العنوان طويلاً */
+            text-overflow: ellipsis;
         }
 
         .latest-chapter {
@@ -75,19 +135,30 @@
             color: yellow;
         }
 
-        /* رابط لوحة التحكم في الأسفل */
         .admin-link {
             text-align: center;
             margin-top: 40px;
+            padding-bottom: 20px;
         }
         .admin-link a {
-            color: #58a6ff;
+            color: var(--accent-color);
             text-decoration: none;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
+    
+    <div class="header-bar">
+        <div class="logo-container">
+            <span class="logo-text">CAT-MANGA</span>
+        </div>
+        <div class="nav-icons">
+            <button id="search-btn"><i class="fas fa-search"></i></button>
+            <button id="theme-toggle"><i class="fas fa-sun"></i></button>
+        </div>
+    </div>
+
     <h1>أحدث المانهوا المترجمة</h1>
 
     <div class="manga-grid" id="manga-container">
@@ -100,14 +171,22 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', loadMangaList);
-
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMangaList();
+            setupThemeToggle();
+            setupSearchButton();
+        });
+        
+        // ----------------------------------------------------------------
+        // وظيفة جلب وعرض قائمة المانهوا
         async function loadMangaList() {
+            // الكود الخاص بـ loadMangaList هو نفسه الذي أرسلته لك مسبقاً،
+            // لذلك لن أكرره هنا لتوفير المساحة، لكن تأكد من وجوده في ملفك.
+            // (تأكد من وجود جميع الدوال المذكورة في الرد السابق)
             const container = document.getElementById('manga-container');
             const statusElement = document.getElementById('status');
             
             try {
-                // جلب ملف JSON من مسار data/manga_list.json
                 const response = await fetch('./data/manga_list.json');
                 
                 if (!response.ok) {
@@ -124,15 +203,13 @@
                     return;
                 }
 
-                container.innerHTML = ''; // مسح رسالة "جاري التحميل"
+                container.innerHTML = ''; 
 
                 data.manga.forEach(manga => {
-                    // فرز الفصول حسب الرقم للعثور على الأحدث
                     manga.chapters.sort((a, b) => b.chapter_number - a.chapter_number);
                     const latestChapter = manga.chapters[0];
 
                     const card = document.createElement('a');
-                    // الرابط يوجه إلى صفحة reader.html مع إرسال ID ورقم الفصل
                     card.href = `reader.html?id=${manga.id}&chapter=${latestChapter.chapter_number}`;
                     card.className = 'manga-card';
 
@@ -159,7 +236,6 @@
                     container.appendChild(card);
                 });
 
-                // مسح رسالة الحالة إذا نجح التحميل
                 statusElement.style.display = 'none';
 
             } catch (error) {
@@ -167,6 +243,44 @@
                 statusElement.style.color = 'red';
                 console.error(error);
             }
+        }
+
+        // ----------------------------------------------------------------
+        // وظيفة تبديل الإضاءة (الوضع الداكن/الفاتح)
+        function setupThemeToggle() {
+            const toggleButton = document.getElementById('theme-toggle');
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const icon = toggleButton.querySelector('i');
+
+            // تطبيق الثيم المحفوظ
+            if (currentTheme === 'light') {
+                document.body.classList.add('light-mode');
+                icon.classList.replace('fa-sun', 'fa-moon'); // أيقونة القمر للتبديل للوضع الداكن
+            }
+
+            toggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+                
+                let theme;
+                if (document.body.classList.contains('light-mode')) {
+                    theme = 'light';
+                    icon.classList.replace('fa-sun', 'fa-moon');
+                } else {
+                    theme = 'dark';
+                    icon.classList.replace('fa-moon', 'fa-sun');
+                }
+                // حفظ الثيم الجديد
+                localStorage.setItem('theme', theme);
+            });
+        }
+        
+        // ----------------------------------------------------------------
+        // وظيفة زر البحث (بسيطة حاليًا)
+        function setupSearchButton() {
+            document.getElementById('search-btn').addEventListener('click', () => {
+                alert('وظيفة البحث قيد التنفيذ!');
+                // في المستقبل، يمكنك فتح شريط بحث هنا
+            });
         }
     </script>
 </body>
