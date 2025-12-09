@@ -61,10 +61,12 @@
         .logo-image {
             height: 100%; 
             width: auto;
-            border-radius: 50%;
+            /* تم إزالة border-radius: 50% لعدم ظهور الصورة داخل دائرة */
         }
         .logo-text { 
-            display: none; 
+            color: var(--main-text-color);
+            font-size: 1.5em;
+            margin-right: 15px; /* مسافة بين اللوجو واسم الموقع */
         }
 
         .nav-icons button {
@@ -209,7 +211,7 @@
     <div class="header-bar">
         <a href="index.html" class="logo-link">
             <img src="assets/unnamed.png" alt="CAT-MANGA Logo" class="logo-image">
-        </a>
+            <span class="logo-text">CAT-MANGA</span> </a>
         
         <div class="nav-icons">
             <button id="theme-toggle"><i class="fas fa-sun"></i></button>
@@ -236,6 +238,10 @@
             if (currentTheme === 'light') {
                 document.body.classList.add('light-mode');
                 icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                // الوضع الداكن هو الافتراضي
+                document.body.classList.remove('light-mode');
+                icon.classList.replace('fa-moon', 'fa-sun');
             }
 
             toggleButton.addEventListener('click', () => {
@@ -351,3 +357,28 @@
                         moreItem.appendChild(moreLink);
                         chapterList.appendChild(moreItem);
                     }
+
+
+                    details.appendChild(title);
+                    details.appendChild(chapterList);
+                    
+                    card.appendChild(imageWrapper);
+                    card.appendChild(details);
+                    
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Error loading manga list:', error);
+                container.innerHTML = `<p id="loading-message" style="color:red;">خطأ فادح في تحميل البيانات: ${error.message}</p>`;
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupThemeToggle();
+            loadMangaList();
+        });
+    </script>
+</body>
+</html>
